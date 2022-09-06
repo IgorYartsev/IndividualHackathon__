@@ -1,4 +1,7 @@
 from rest_framework import serializers
+from django.db.models import Avg
+
+
 from .models import Movie
 from comments_and_likes.serializers import CommentSerializer
 
@@ -17,6 +20,7 @@ class MovieSerializers(serializers.ModelSerializer):
         if user.is_authenticated:
             repr['is_liked'] = self.is_liked(instance)
         repr['likes_count'] = instance.likes.count()
+        repr['rating'] = instance.ratings.aggregate(Avg('rating'))['rating__avg']
         return repr
 
 class MovieDetailSerializers(serializers.ModelSerializer):
@@ -32,6 +36,7 @@ class MovieDetailSerializers(serializers.ModelSerializer):
         if user.is_authenticated:
             repr['is_liked'] = self.is_liked(instance)
         repr['likes_count'] = instance.likes.count()
+        repr['rating'] = instance.ratings.aggregate(Avg('rating'))['rating__avg']
         repr['comments'] = CommentSerializer(instance.comments.all(),many=True).data
         return repr
 
