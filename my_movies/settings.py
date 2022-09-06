@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'account',
     'category',
     'films',
+    'comments_and_likes',
 ]
 
 MIDDLEWARE = [
