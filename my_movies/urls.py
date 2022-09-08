@@ -27,6 +27,7 @@ from rest_framework import permissions
 
 from category.views import CategoryViewSet
 from films.views import MovieViewSet
+from account.views import SendingMessagesView,UserDetailView
 
 
 
@@ -54,9 +55,10 @@ router.register('category', CategoryViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/account/',include('account.urls')),
-    path('api/v1/favorites/',include('favorites.urls')),
+    path('api/v1/favorites/<int:pk>/',UserDetailView.as_view()),
     path('api/v1/',include(router.urls)),
     path('api/v1/',include('comments_and_likes.urls')),
+    path('api/v1/mailing_list/',SendingMessagesView.as_view()),
 
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0),name='schema-json'),
     path('api/v1/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),

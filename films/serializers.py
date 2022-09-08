@@ -5,14 +5,20 @@ from django.db.models import Avg
 from .models import Movie
 from comments_and_likes.serializers import CommentSerializer
 
+
+class MovieCreateSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Movie
+        fields = '__all__'
+
 class MovieSerializers(serializers.ModelSerializer):
     class Meta:
         model = Movie
         fields = ('preview','title','year')
 
-    def is_liked(self,movies):
+    def is_liked(self,movie):
         user = self.context.get('request').user
-        return user.liked.filter(movies=movies).exists()
+        return user.liked.filter(movie=movie).exists()
 
     def to_representation(self, instance):
         repr = super().to_representation(instance)

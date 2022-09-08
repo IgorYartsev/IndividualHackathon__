@@ -8,11 +8,12 @@ from rest_framework.pagination import PageNumberPagination
 
 
 from .models import Movie
-from .serializers import MovieSerializers,MovieDetailSerializers
+from .serializers import MovieSerializers,MovieDetailSerializers,MovieCreateSerializers
 from comments_and_likes.serializers import CommentSerializer,LikeSerializer
 from comments_and_likes.models import Like
 from rating.serializers import RatingSerializer
 from favorites.models import Favorites
+from my_movies.tasks import sending_message_task
 
 class StandartResultPagination(PageNumberPagination):
     page_size = 5
@@ -25,6 +26,14 @@ class MovieViewSet(ModelViewSet):
     filterset_fields = ('category','year')
     search_fields = ('title',)
     pagination_class = StandartResultPagination
+
+    def create(self, request):
+        serializer =MovieCreateSerializers(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            sending_message_task.delay()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=4000)
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -50,7 +59,7 @@ class MovieViewSet(ModelViewSet):
         movie = self.get_object()
         if request.user.liked.filter(movie=movie).exists():
             return Response('Вы уже поставили свой лайк!', status=400)
-        Like.objects.create(movie=movie, owner=request.user)
+        Like.objects.create(movie=movie, user=request.user)
         return Response('Вы поставили лайк', status=201)
 
     @action(['POST'], detail=True, )

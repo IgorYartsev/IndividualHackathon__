@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     # my apps
     'account',
     'category',
-    'films',
+    'films.apps.FilmsConfig',
     'comments_and_likes',
     'rating',
     'favorites',
@@ -192,3 +192,6 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_LIFETIME': timedelta(minutes=60),
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
+
+CELERY_BROKER_URL = "redis://localhost:6379"
+CELERY_RESULT_BACKEND = "redis://localhost:6379"
