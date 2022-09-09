@@ -5,6 +5,8 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
 from rest_framework.pagination import PageNumberPagination
+from django.http import StreamingHttpResponse
+from django.shortcuts import render, get_object_or_404
 
 
 from .models import Movie
@@ -14,17 +16,18 @@ from comments_and_likes.models import Like
 from rating.serializers import RatingSerializer
 from favorites.models import Favorites
 from my_movies.tasks import sending_message_task
+from .services import open_file
 
 class StandartResultPagination(PageNumberPagination):
-    page_size = 5
+    page_size = 3
     page_query_param = 'page'
     max_page_size = 1000
 
 class MovieViewSet(ModelViewSet):
     queryset = Movie.objects.all()
     filter_backends = (DjangoFilterBackend, SearchFilter)
-    filterset_fields = ('category','year')
-    search_fields = ('title',)
+    filterset_fields = ('category',)
+    search_fields = ('title','year','country',)
     pagination_class = StandartResultPagination
 
     def create(self, request):
@@ -33,7 +36,7 @@ class MovieViewSet(ModelViewSet):
             serializer.save()
             sending_message_task.delay()
             return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=4000)
+        return Response(serializer.errors, status=400)
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -97,3 +100,24 @@ class MovieViewSet(ModelViewSet):
             return Response('Убрали из избранных', status=204)
         Favorites.objects.create(movie=movie, user=request.user)
         return Response('Добавлено в избранные!', status=201)
+
+
+
+def get_list_video(request):
+    return render(request, 'video_hosting/home.html', {'video_list': Movie.objects.all()})
+
+
+def get_video(request, pk: int):
+    _video = get_object_or_404(Movie, id=pk)
+    return render(request, "video_hosting/video.html", {"video": _video})
+
+
+def get_streaming_video(request, pk: int):
+    file, status_code, content_length, content_range = open_file(request, pk)
+    response = StreamingHttpResponse(file, status=status_code, content_type='video/mp4')
+
+    response['Accept-Ranges'] = 'bytes'
+    response['Content-Length'] = str(content_length)
+    response['Cache-Control'] = 'no-cache'
+    response['Content-Range'] = content_range
+    return response

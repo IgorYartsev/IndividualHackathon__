@@ -59,6 +59,7 @@ urlpatterns = [
     path('api/v1/',include(router.urls)),
     path('api/v1/',include('comments_and_likes.urls')),
     path('api/v1/mailing_list/',SendingMessagesView.as_view()),
+    path('video/',include('films.urls')),
 
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0),name='schema-json'),
     path('api/v1/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
@@ -68,4 +69,5 @@ urlpatterns = [
 
 
 ] + static(settings.MEDIA_URL, document_root= settings.MEDIA_ROOT)
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

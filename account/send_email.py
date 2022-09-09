@@ -23,7 +23,7 @@ def send_reset_password(user,code):
     fail_silently=False
 )
 def sending_message():
-    full_link =  f'http://localhost:8000/api/v1/movies/'
+    full_link =  f'http://localhost:8000/api/v1/video/'
     for user in Contact.objects.all():
         send_mail(
             'My movies',
