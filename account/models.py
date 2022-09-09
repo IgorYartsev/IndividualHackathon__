@@ -63,3 +63,6 @@ class CustomUser(AbstractUser):
         code = str(uuid.uuid4())
         self.activation_code = code
 
+
+class Contact(models.Model):
+    email = models.EmailField('email adress',unique=True,)

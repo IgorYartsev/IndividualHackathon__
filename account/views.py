@@ -9,7 +9,8 @@ from rest_framework import permissions,generics
 from django.contrib.auth import get_user_model
 
 from . import serializers
-from .send_email import send_confirmation_email, send_reset_password
+from .permissions import IsAccountOwner
+from my_movies.tasks import send_email_task,send_reset_email_task
 
 User = get_user_model()
 
@@ -21,7 +22,7 @@ class RegistrationView(APIView):
         if serializer.is_valid(raise_exception = True):
             user = serializer.save()
             if user:
-                send_confirmation_email(user)
+                send_email_task.delay(user.email, user.activation_code)
             return Response (serializer.data, status = 201)
         return Response (status=400)
 
@@ -66,7 +67,7 @@ class ForgorPasswordView(APIView):
             user = User.objects.get(email = serializer.data.get(('email')))
             user.create_activation_code()
             user.save()
-            send_reset_password(user)
+            send_reset_email_task.delay(user.email,user.activation_code)
             return Response('Chek your mail!',status=200)
         except User.DoesNotExist:
             return Response('User with this email does not exist',
@@ -81,6 +82,25 @@ class RestorePasswordView(APIView):
         serializer.save()
 
         return Response('Password chaneged successfully', status = 200)
+
+
+
+class SendingMessagesView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self,request):
+        serializer = serializers.SendingMessagesSerializers(data= request.data)
+        serializer.is_valid(raise_exception = True)
+        serializer.save()
+        return Response('You have subscribed to the mailing list',status=200)
+
+
+
+class UserDetailView(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    permission_classes = (permissions.IsAuthenticated,IsAccountOwner)
+    serializer_class = serializers.UserSerializer
+
 
 
 
