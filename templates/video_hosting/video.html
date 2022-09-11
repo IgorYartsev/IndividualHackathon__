@@ -10,7 +10,14 @@
         </div>
         <div class="col-md-6 col-sm-6">
           <h4><a href="{% url 'video' video.id %}">{{ video.title }}</a></h4>
+          <p class="text">Дата выпуска: {{ video.year }} </p>
+          <p class="text">Страна: {{ video.country }} </p>
+          <p class="text">Категории: {{ video.category }} </p>
+          <p class="text">Описание:</p>
           <p>{{ video.descriptions }}</p>
+
+
+
         </div>
       </div>
       <div class="row">
